@@ -3,6 +3,8 @@ import sqlite3
 # import liquidcrystal_i2c
 from sys import exit
 from random import seed,randint
+from time import sleep
+# import Adafruit_BBIO.GPIO as GPIO
 
 # class LCD:
 #     def __init__(self): 
@@ -16,22 +18,30 @@ from random import seed,randint
 
 
 
-def silnikrobibrr():
-    pass
+def silnikrobibrr(enA,in1,in2):
+    
+    GPIO.output(enA, GPIO.HIGH)
+    GPIO.output(in1, GPIO.HIGH)
+    GPIO.output(in2, GPIO.LOW)
+    sleep(1)
+    GPIO.output(enA, GPIO.HIGH)
+    GPIO.output(in1, GPIO.LOW)
+    GPIO.output(in2, GPIO.HIGH)
+    
 
 
 
-# def countDots():
-#     silnikrobibrr()
-#     camera = cv2.VideoCapture(0)
-#     _, img = camera.read()
-#     _,_,blue = cv2.split(img)
-#     _, thresh = cv2.threshold(blue, 100, 255, cv2.THRESH_BINARY)
-#     contours,_ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-#     dots = 0
-#     for c in contours:
-#         dots +=1 if 300<cv2.contourArea(c)<=1500 else 0
-#     return dots
+def countDots(pins):
+    silnikrobibrr(*pins)
+    camera = cv2.VideoCapture(0)
+    _, img = camera.read()
+    _,_,blue = cv2.split(img)
+    _, thresh = cv2.threshold(blue, 100, 255, cv2.THRESH_BINARY)
+    contours,_ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    dots = 0
+    for c in contours:
+        dots +=1 if 300<cv2.contourArea(c)<=1500 else 0
+    return dots
 
 def countDotsMock():
     num = randint(1,10)
@@ -50,10 +60,18 @@ def establishConnection(db):
         exit() 
     return conn,cur
 
+
+
 if __name__ == '__main__':
     # lcd = LCD()
     db = r'Kropeczki.db'
-          
+    enA ='jakis_pin'
+    in1 = 'inny pin'
+    in2 = 'jeszcze inny pin'
+    GPIO.setup(enA, GPIO.OUT)
+    GPIO.setup(in1, GPIO.OUT)
+    GPIO.setup(in2, GPIO.OUT)
+    
                 
     
     print('''L o S o W a Ń s K O
@@ -75,7 +93,7 @@ if __name__ == '__main__':
         if choice == 'Q' and len(args)==2:
             conn,cur = establishConnection(db)
                 
-            dots = countDotsMock()
+            dots = countDots((enA,in1,in2))
             seed(dots)
             print(randint(args[0],args[1]))
             cur.execute(f"Insert into Kropeczki (suma) values ({str(dots)});")
