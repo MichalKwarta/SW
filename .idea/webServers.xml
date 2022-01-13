@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="eb41b611-f6e8-4d46-8f40-5640c0ced1f9" name="BeagleBone Black">
+        <fileTransfer accessType="SFTP" host="192.168.7.2" port="22" sshConfigId="b02db39a-a7b5-408d-ab23-962f3725285e" sshConfig="debian@192.168.7.2:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
