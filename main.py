@@ -1,6 +1,7 @@
+from distutils.command.build import build
 import cv2
 import sqlite3
-# import liquidcrystal_i2c
+import liquidcrystal_i2c
 from sys import exit
 from random import seed, randint
 from time import sleep
@@ -13,24 +14,12 @@ import Adafruit_BBIO.GPIO as GPIO
 def silnikrobibrr(enA='P9_25', in1='P9_23', in2='P9_21'):
 
     GPIO.output(enA, GPIO.HIGH)
-    # GPIO.output(in1, GPIO.HIGH)
-    # GPIO.output(in2, GPIO.LOW)
     print("BRRRR")
     sleep(2)
     GPIO.output(enA, GPIO.LOW)
-    # GPIO.output(in1, GPIO.LOW)
-    # GPIO.output(in2, GPIO.HIGH)
 
 
-# import Adafruit_BBIO.GPIO as GPIO
 
-# class LCD:
-#     def __init__(self):
-#         self.cols = 20
-#         rows = 4
-#         self.lcd = liquidcrystal_i2c.LiquidCrystal_I2C(0x27, 2, numlines=rows)
-#     def print(self,text,row):
-#         self.lcd.printline(row,text.center(self.cols))
 
 
 
@@ -61,22 +50,44 @@ def establishConnection(db):
         exit()
     return conn, cur
 
-
-if __name__ == '__main__':
-    # lcd = LCD()
-    db = r'Kropeczki.db'
-
-    GPIO.setup("P9_21", GPIO.OUT)
-    GPIO.setup("P9_23", GPIO.OUT)
-    GPIO.setup("P9_25", GPIO.OUT)
-    GPIO.output('P9_25', GPIO.LOW)
-    GPIO.output('P9_23', GPIO.HIGH)
-    GPIO.output('P9_21', GPIO.LOW)
-    print('''L o S o W a Ń s K O
+def printhelp():
+        print('''L o S o W a Ń s K O
           q L U- losuj ziarno i wygeneruj liczbę z zakresu <L;U>
           w N L U - pobierz z bazy danych ostanie N wyników i wygeneruj liczbę z zakresu <L;U>  
+          h - help
           e - exit
           ''')
+        
+        
+if __name__ == '__main__':
+    db = r'Kropeczki.db'
+
+    #pins setup
+    enA = "P9_21"
+    in1 = "P9_23"
+    in2 = "P9_25"
+    GPIO.setup(enA, GPIO.OUT)
+    GPIO.setup(in1, GPIO.OUT)
+    GPIO.setup(in2, GPIO.OUT)
+    
+    GPIO.output(enA, GPIO.LOW)
+    GPIO.output(in1, GPIO.HIGH)
+    GPIO.output(in2, GPIO.LOW)
+    
+    
+    #lcd setup
+    cols = 20
+    rows = 4
+
+    lcd = liquidcrystal_i2c.LiquidCrystal_I2C(0x27, 2, numlines=rows)
+    lcd.backlight()
+
+   
+    
+    
+    
+    
+    printhelp()
 
     while True:
         choice, *args = input(">").split()
@@ -90,11 +101,16 @@ if __name__ == '__main__':
         if choice == 'Q' and len(args) == 2:
             conn, cur = establishConnection(db)
             silnikrobibrr()
-            silnikrobibrr()
             dots = countDots()
-            print("ilosc kostek ",dots)
+            result = "ilosc kostek " + str(dots)
+            print(result)
             seed(dots)
-            print(randint(args[0], args[1]))
+            rand_number = randint(args[0], args[1])
+            print(rand_number)
+            lcd.printline(0, result.center(cols))
+            lcd.printline(1,rand_number.center(cols ))
+            
+            
             cur.execute("Insert into Kropeczki (suma) values ("+ str(dots)+ ");")
             conn.commit()
             conn.close()
@@ -105,13 +121,28 @@ if __name__ == '__main__':
             cur.execute("select suma from Kropeczki order by id desc limit " + str(args[0]))
             records = cur.fetchall()
             total = sum([int(x[0]) for x in records])
+            build_string = ""
             for i, x in enumerate(records):
                 print(i, int(x[0]))
-
+                build_string+=" {}".format(str(x[0]))
+            
+            split_string = [build_string[i:i+20] for i in range(0, len(build_string), 20)]
+            
             seed(total)
-            print(randint(args[1], args[2]))
+            rand_number = randint(args[1], args[2])
+            if len(split_string)<=4:
+                
+                for i,string in enumerate(split_string):
+                    lcd.printline(i,string)
+            else:
+                lcd.printline(0,"za duzy output")
+                lcd.printline(1,str(rand_number))
             conn.close()
-
+            
+            
+        elif choice == "H" or "HELP":
+            printhelp()
+            
         elif choice == 'E':
             exit();
         else:
