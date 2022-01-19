@@ -11,7 +11,7 @@ import Adafruit_BBIO.GPIO as GPIO
 
 
 
-def silnikrobibrr(enA='P9_25', in1='P9_23', in2='P9_21'):
+def silnikrobibrr(enA='P9_21'):
 
     GPIO.output(enA, GPIO.HIGH)
     print("BRRRR")
