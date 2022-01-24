@@ -9,8 +9,7 @@ import numpy as np
 import Adafruit_BBIO.GPIO as GPIO
 
 
-def silnikrobibrr(enA='P9_23'):
-    sleep(0.5)
+def moveMotor(enA='P9_23'):
     GPIO.output(enA, GPIO.HIGH)
     sleep(0.15)
     GPIO.output(enA, GPIO.LOW)
@@ -18,22 +17,13 @@ def silnikrobibrr(enA='P9_23'):
 
 def countDots():
     sleep(1)
-    minDist = 13
-    param1 = 160
-    param2 = 11
-    minRadius = 5
-    maxRadius = 10
-
     camera = cv2.VideoCapture(0)
     _, img = camera.read()
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, minDist=minDist, param1=param1, param2=param2,
-                               minRadius=minRadius, maxRadius=maxRadius)
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, minDist=13, param1=160, param2=11,
+                               minRadius=5, maxRadius=10)
     if circles is not None:
         circles = np.uint16(np.around(circles))
-        for i in circles[0, :]:
-            cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
         return len(circles[0])
 
 
@@ -49,7 +39,7 @@ def establishConnection(db):
 
 
 def printhelp():
-    print('''L o S o W a Ń s K O
+    print('''Generator liczb prawdziwie losowych V2
           q L U- losuj ziarno i wygeneruj liczbę z zakresu <L;U>
           w N L U - pobierz z bazy danych ostanie N wyników i wygeneruj liczbę z zakresu <L;U>  
           h - help
@@ -92,7 +82,7 @@ if __name__ == '__main__':
         if choice == 'Q' and len(args) == 2:
             lcd.clear()
             conn, cur = establishConnection(db)
-            silnikrobibrr()
+            moveMotor()
             dots = countDots()
             result = "Ile oczek " + str(dots)
             print(result)
