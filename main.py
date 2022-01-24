@@ -5,30 +5,36 @@ import liquidcrystal_i2c
 from sys import exit
 from random import seed, randint
 from time import sleep
-
+import numpy as np
 import Adafruit_BBIO.GPIO as GPIO
 
 
 def silnikrobibrr(enA='P9_23'):
-    GPIO.output(enA, GPIO.HIGH)
-    print("BRRRR")
     sleep(0.5)
+    GPIO.output(enA, GPIO.HIGH)
+    sleep(0.15)
     GPIO.output(enA, GPIO.LOW)
 
 
 def countDots():
+    sleep(1)
+    minDist = 13
+    param1 = 160
+    param2 = 11
+    minRadius = 5
+    maxRadius = 10
+
     camera = cv2.VideoCapture(0)
-    _, frame = camera.read()
-    cv2.imwrite("nowe.jpg", frame)
-    _, _, red = cv2.split(frame)
-    _, threshh = cv2.threshold(red, 50, 255, cv2.THRESH_BINARY)
-    contours = cv2.findContours(threshh, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-    suma = 0
-    for c in contours[1]:
-        (_, _, w, h) = cv2.boundingRect(c)
-        if 100 < cv2.contourArea(c) <= 300 and 0.8 < w / h < 1.2:
-            suma += 1
-    return suma
+    _, img = camera.read()
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, minDist=minDist, param1=param1, param2=param2,
+                               minRadius=minRadius, maxRadius=maxRadius)
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+        for i in circles[0, :]:
+            cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
+        return len(circles[0])
 
 
 def establishConnection(db):
@@ -108,33 +114,33 @@ if __name__ == '__main__':
             records = cur.fetchall()
             total = sum([int(x[0]) for x in records])
             build_string = ""
-            for i, x in enumerate(records):
-                print(i, int(x[0]))
+            for x in records:
+                print(int(x[0]))
                 build_string += " {}".format(str(x[0]))
 
-            split_string = [build_string[i:i + 20] for i in range(0, len(build_string), 20)]
 
             seed(total)
             rand_number = randint(args[1], args[2])
             print("wylosowano ",rand_number)
-            if len(split_string) <= 1:
-
-                for i, string in enumerate(split_string):
-                    lcd.printline(i, string)
-                lcd.printline(1,str(rand_number).center(cols))
-
+            if len(build_string) >=15:
+                lcd.printline(0, build_string[:15])
+                print("Output nie zmieścił sie na wyświetlaczu")
             else:
-                lcd.printline(0, "za duzy output")
-                lcd.printline(1, str(rand_number))
+                lcd.printline(0, build_string)
+
+            lcd.printline(1,str(rand_number).center(cols))
+
+
 
             conn.close()
 
 
-        elif choice == "H" or "HELP":
+        elif choice == "H":
             printhelp()
 
         elif choice == 'E':
-            exit();
+            exit(0);
+
         else:
             print("Musiałeś coś źle wpisać :(")
 
