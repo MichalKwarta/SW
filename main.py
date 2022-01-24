@@ -94,7 +94,7 @@ if __name__ == '__main__':
             conn, cur = establishConnection(db)
             silnikrobibrr()
             dots = countDots()
-            result = "Ile " + str(dots)
+            result = "Ile oczek " + str(dots)
             print(result)
             seed(dots)
             rand_number = randint(args[0], args[1])
