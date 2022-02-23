@@ -45,7 +45,8 @@ def countDots():
 ```
 sleep(1) was meant to prevent capturing photo when dices were still moving
 
-![Alt text](./readmeResources/jupyterExample.png?raw=true "Example")*Example of dots counting from notebook.ipynb file*
+*Example of dots counting from notebook.ipynb file*
+![Alt text](./readmeResources/jupyterExample.png?raw=true "Example")
 
 
 
